@@ -1,7 +1,8 @@
 common_cflags = [
     "-O3",
-    //"-flto",
+    "-flto",
     "-fPIC",
+    "-fstack-protector-all",
     "-fvisibility=hidden",
     //"-fno-plt",
     "-pipe",
@@ -37,6 +38,9 @@ cc_defaults {
     cflags: common_cflags,
     conlyflags: ["-std=c11", "-Wmissing-prototypes"],
     stl: "none",
+    sanitize: {
+        cfi: true,
+    },
 }
 
 lib_src_files = [
@@ -68,5 +72,8 @@ cc_library {
         debuggable: {
             cflags: ["-DLABEL_MEMORY"],
         },
+    },
+    sanitize: {
+        cfi: true,
     },
 }

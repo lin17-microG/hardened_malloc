@@ -190,6 +190,32 @@ between portability, performance, memory usage or security. The core design
 choices are not configurable and the allocator remains very security-focused
 even with all the optional features disabled.
 
+For reduced memory usage at the expense of performance (this will also reduce
+the size of the empty slab caches and quarantines, saving a lot of memory,
+since those are currently based on the size of the largest size class):
+
+    make \
+    N_ARENA=1 \
+    CONFIG_EXTENDED_SIZE_CLASSES=false
+
+The default configuration has all normal security features enabled (just not
+the niche `CONFIG_SEAL_METADATA`) and is quite aggressive in terms of
+sacrificing performance and memory usage for security. An example of a leaner
+configuration disabling expensive security features other than zero-on-free /
+slab canaries along with using far fewer guard slabs:
+
+    make \
+    CONFIG_WRITE_AFTER_FREE_CHECK=false \
+    CONFIG_SLOT_RANDOMIZE=false \
+    CONFIG_SLAB_QUARANTINE_RANDOM_LENGTH=0 \
+    CONFIG_SLAB_QUARANTINE_QUEUE_LENGTH=0 \
+    CONFIG_GUARD_SLABS_INTERVAL=8
+
+This is a more appropriate configuration for a more mainstream OS choosing to
+use hardened\_malloc while making a smaller memory and performance sacrifice.
+The slot randomization isn't particularly expensive but it's low value and is
+one of the first things to disable when aiming for higher performance.
+
 The following boolean configuration options are available:
 
 * `CONFIG_WERROR`: `true` (default) or `false` to control whether compiler
@@ -280,7 +306,7 @@ The following integer configuration options are available:
   number of slots in the random array used to randomize free slab reuse.
 * `CONFIG_CLASS_REGION_SIZE`: `34359738368` (default) to control the size of
   the size class regions.
-* `CONFIG_N_ARENA`: `1` (default) to control the number of arenas
+* `CONFIG_N_ARENA`: `4` (default) to control the number of arenas
 * `CONFIG_STATS`: `false` (default) to control whether stats on allocation /
   deallocation count and active allocations are tracked. See the [section on
   stats](#stats) for more details.

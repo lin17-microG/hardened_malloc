@@ -985,19 +985,17 @@ int get_metadata_key(void) {
 #endif
 }
 
+static inline void thread_set_metadata_access(UNUSED unsigned access) {
 #ifdef USE_PKEY
-static inline void thread_set_metadata_access(unsigned access) {
     if (ro.metadata_pkey == -1) {
         return;
     }
     pkey_set(ro.metadata_pkey, access);
-}
 #endif
+}
 
 static inline void thread_unseal_metadata(void) {
-#ifdef USE_PKEY
     thread_set_metadata_access(0);
-#endif
 }
 
 static inline void thread_seal_metadata(void) {
@@ -1094,7 +1092,7 @@ COLD static void init_slow_path(void) {
     handle_bugs();
 
     if (sysconf(_SC_PAGESIZE) != PAGE_SIZE) {
-        fatal_error("page size mismatch");
+        fatal_error("runtime page size does not match compile-time page size which is not supported");
     }
 
     struct random_state *rng = allocate_pages(sizeof(struct random_state), PAGE_SIZE, true, "malloc init rng");
